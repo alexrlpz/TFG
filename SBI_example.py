@@ -1,0 +1,123 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+To do.
+"""
+
+import sys
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import pickle
+
+# Torch and SBI libraries
+import torch
+from sbi import analysis as analysis
+
+from sbi.neural_nets.embedding_nets import FCEmbedding
+from sbi.inference import SNPE
+from sbi.utils.get_nn_models import posterior_nn
+
+# path to simulation data
+data_path = '/media/pablo/TOSHIBA EXT/LIF_model_simulations'
+
+# parameters of the LIF_network object
+theta_data = {'parameters':['J_EE',
+                            'J_IE',
+                            'J_EI',
+                            'J_II'],
+              'data': []}
+# Current Dipole Moment (CDM) data
+CDM_data = []
+
+# Load simulation data
+ldir = os.listdir(data_path)
+for i,folder in enumerate(ldir):
+    print(f'Loading file {i} out of {len(ldir)}')
+    # load CDMs
+    try:
+        cdm = pickle.load(open(os.path.join(data_path,folder,"CDM_data"),'rb'))
+        CDM_data.append(cdm)
+    except (FileNotFoundError, IOError):
+        print(f'File CDM_data not found in {folder}')
+
+    # load synapse parameters of recurrent connections and external input
+    try:
+        LIF_params = pickle.load(open(os.path.join(data_path,folder,"LIF_params"),'rb'))
+        theta_data['data'].append([LIF_params['J_YX'][0][0],
+                                   LIF_params['J_YX'][0][1],
+                                   LIF_params['J_YX'][1][0],
+                                   LIF_params['J_YX'][1][1]
+                                  ])
+    except (FileNotFoundError, IOError):
+        print(f'File LIF_params not found in {folder}')
+
+# transform to np arrays
+theta_data['data'] = np.array(theta_data['data'])
+CDM_data = np.array(CDM_data)
+
+# # create folder
+# if not os.path.isdir('data'):
+#     os.mkdir('data')
+# # save data arrays to file
+# pickle.dump(theta_data,open('data/theta_data','wb'))
+# pickle.dump(CDM_data,open('data/CDM_data','wb'))
+# load data arrays from file
+# theta_data = pickle.load(open('data/theta_data','rb'))
+# CDM_data = pickle.load(open('data/CDM_data','rb'))
+
+# remove the first 500 samples (transient response from convolution)
+CDM_data = CDM_data[:,500:]
+
+# pre-configured embedding network
+embedding_net = FCEmbedding(
+    input_dim=CDM_data.shape[1],
+    num_hiddens=100,
+    num_layers=2,
+    output_dim=20,
+)
+
+# instantiate the SBI object
+density_estimator_build_fun = posterior_nn(
+    model="maf", hidden_features=100, num_transforms=2,
+    embedding_net = embedding_net
+)
+inference = SNPE(density_estimator=density_estimator_build_fun)
+
+# pass the simulated data to the inference object.
+inference.append_simulations(
+        torch.from_numpy(np.array(theta_data['data'],dtype=np.float32)),
+        torch.from_numpy(np.array(CDM_data,dtype=np.float32)))
+
+# train the neural density estimator
+density_estimator = inference.train()
+print("\n")
+
+# build the posterior
+posterior = inference.build_posterior(density_estimator)
+
+# Test the trained posterior
+print('\n')
+while(True):
+    # Randomly pick a sample
+    sample = int(np.random.uniform(low = 0, high = len(theta_data['data'])))
+    print("Test sample: ", theta_data['data'][sample])
+    theta_o = torch.from_numpy(
+                np.array(theta_data['data'][sample],dtype=np.float32))
+    x_o = torch.from_numpy(
+                np.array(CDM_data[sample],dtype=np.float32))
+    # Sample the posterior
+    posterior_samples = posterior.sample((5000,), x=x_o)
+
+    # Plot posterior samples
+    _ = analysis.pairplot(
+        samples = posterior_samples,
+        points=[theta_o],
+        limits=None,
+        figsize=(8, 5),
+        upper="hist",
+        points_colors=["red"],
+        labels = theta_data['parameters'],
+        points_offdiag=dict(marker="+", markersize=20)
+    )
+    plt.show()
