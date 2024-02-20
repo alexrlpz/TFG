@@ -69,7 +69,7 @@ class LIF_network(object):
             dt=2**-4)
 
         # Number of threads for the LIF network model simulations
-        self.local_num_threads = 8
+        self.local_num_threads = 12
 
     def create_kernel(self):
         '''

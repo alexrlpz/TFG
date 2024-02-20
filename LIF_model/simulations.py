@@ -39,7 +39,7 @@ if not os.path.isdir('LIF_simulations'):
 #             for J_II in [-8.441]:
 
 # Exploration of LIF network parameters
-n_simulations = 10**4
+n_simulations = 1
 currentsim = 1
 for J_EE in np.linspace(0.5,4.,10):
     for J_IE in np.linspace(0.5,4.,10):
