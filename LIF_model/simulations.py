@@ -46,9 +46,8 @@ for J_EE in np.linspace(0.5,4.,10):
         for J_EI in np.linspace(-40.,-1.,10):
             for J_II in np.linspace(-40.,-1.,10):
                 print("\n-------------------\n",end=' ', flush=True)
-                print("\nJ_EE = %s, J_IE = %s, J_EI = %s, J_II = %s, "\
-                      "tau_syn_E = %s, tau_syn_I = %s, J_ext = %s\n" % (
-                       J_EE,J_IE,J_EI,J_II,tau_syn_E,tau_syn_I,J_ext),
+                print("\nJ_EE = %s, J_IE = %s, J_EI = %s, J_II = %s,\n" % (
+                       J_EE,J_IE,J_EI,J_II),
                        end=' ', flush=True)
                 print("Computing simulation %s out of %s\n" % (currentsim,
                                                              n_simulations),
@@ -56,16 +55,14 @@ for J_EE in np.linspace(0.5,4.,10):
                 currentsim+=1
                 # constraints on the parameter space search
                 if (-J_EI > 2.*J_EE) and (-J_EI > 2.*J_IE) and\
-                   (-J_II > 2.*J_EE) and (-J_II > 2.*J_IE) and\
-                   (2.*tau_syn_E < tau_syn_I):
+                   (-J_II > 2.*J_EE) and (-J_II > 2.*J_IE):
                     enable = True
                 else:
                     enable = False
 
                 if enable:
                     # Create hash
-                    js_0 = json.dumps([J_EE,J_IE,J_EI,J_II,tau_syn_E,
-                                       tau_syn_I,J_ext],
+                    js_0 = json.dumps([J_EE,J_IE,J_EI,J_II],
                                        sort_keys=True).encode()
                     folder = hashlib.md5(js_0).hexdigest()
                     # Create folder
@@ -87,9 +84,9 @@ for J_EE in np.linspace(0.5,4.,10):
 
                     # Modify parameters
                     LIF_net.LIF_params['J_YX'] = [[J_EE, J_IE], [J_EI, J_II]]
-                    LIF_net.LIF_params['tau_syn_YX'] = [[tau_syn_E, tau_syn_I],
-                                                        [tau_syn_E, tau_syn_I]]
-                    LIF_net.LIF_params['J_ext'] = J_ext
+                    #LIF_net.LIF_params['tau_syn_YX'] = [[tau_syn_E, tau_syn_I],
+                                                        #[tau_syn_E, tau_syn_I]]
+                    #LIF_net.LIF_params['J_ext'] = J_ext
 
                     # create the LIF network
                     LIF_net.create_LIF_network()
