@@ -33,18 +33,20 @@ if not os.path.isdir('LIF_simulations'):
     os.mkdir('LIF_simulations')
 
 # ground truth parameters
-# for J_EE in [1.589]:
-#     for J_IE in [2.020]:
-#         for J_EI in [-23.84]:
-#             for J_II in [-8.441]:
+n_simulations = 5
+currentsim = 1
+for J_EE in [1.589]:
+    for J_IE in [2.020]:
+       for J_EI in [-23.84]:
+           for J_II in [-8.441]:
 
 # Exploration of LIF network parameters
-n_simulations = 1
-currentsim = 1
-for J_EE in np.linspace(0.5,4.,10):
-    for J_IE in np.linspace(0.5,4.,10):
-        for J_EI in np.linspace(-40.,-1.,10):
-            for J_II in np.linspace(-40.,-1.,10):
+
+#for J_EE in np.linspace(0.5,4.,10):
+    #for J_IE in np.linspace(0.5,4.,10):
+        #for J_EI in np.linspace(-40.,-1.,10):
+            #for J_II in np.linspace(-40.,-1.,10):
+            while (currentsim <= n_simulations):
                 print("\n-------------------\n",end=' ', flush=True)
                 print("\nJ_EE = %s, J_IE = %s, J_EI = %s, J_II = %s,\n" % (
                        J_EE,J_IE,J_EI,J_II),
