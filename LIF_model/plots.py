@@ -27,8 +27,8 @@ LIF_net = LIF_network.LIF_network()
 
 # Load data
 # path to simulation data
-data_path = '/media/pablo/TOSHIBA EXT/LIF_model_simulations/'
-folder = 'ff6ee6ec7b6f92a4f9bcde00772c795a'
+data_path = '/home/alejandro/Escritorio/TFG/TFG/LIF_model/LIF_simulations/'
+folder = '366d208871265d6c6dac42abaf93a19b'
 path = data_path+folder
 
 LIF_net.LIF_params = pickle.load(open(path+'/LIF_params','rb'))
