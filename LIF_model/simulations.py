@@ -153,10 +153,7 @@ for J_EE in [1.589]:
                     pickle.dump(LIF_net.tau,open('LIF_simulations/'+folder+'/tau','wb'))
 
                     # pickle.dump(LFP_data,open('LIF_simulations/'+folder+'/LFP_data','wb'))
-                    pickle.dump(CDM_data['EE']+\
-                                CDM_data['EI']+\
-                                CDM_data['IE']+\
-                                CDM_data['II'],open('LIF_simulations/'+folder+'/CDM_data','wb'))
+                    pickle.dump(CDM_data,open('LIF_simulations/'+folder+'/CDM_data','wb'))
                     pickle.dump(lif_mean_nu_X,open('LIF_simulations/'+folder+'/lif_mean_nu_X','wb'))
                     pickle.dump([bins, lif_nu_X],open('LIF_simulations/'+folder+'/lif_nu_X','wb'))
                     
