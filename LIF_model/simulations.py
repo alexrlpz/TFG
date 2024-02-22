@@ -157,19 +157,19 @@ for J_EE in [1.589]:
                                 CDM_data['EI']+\
                                 CDM_data['IE']+\
                                 CDM_data['II'],open('LIF_simulations/'+folder+'/CDM_data','wb'))
-                    # pickle.dump(lif_mean_nu_X,open('LIF_simulations/'+folder+'/lif_mean_nu_X','wb'))
-                    # pickle.dump([bins, lif_nu_X],open('LIF_simulations/'+folder+'/lif_nu_X','wb'))
-                    #
-                    # for i, Y in enumerate(LIF_net.LIF_params['X']):
-                    #     pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['times'],
-                    #                 open('LIF_simulations/'+folder+'/times_'+Y,'wb'))
-                    #     pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['senders'],
-                    #                 open('LIF_simulations/'+folder+'/gids_'+Y,'wb'))
+                    pickle.dump(lif_mean_nu_X,open('LIF_simulations/'+folder+'/lif_mean_nu_X','wb'))
+                    pickle.dump([bins, lif_nu_X],open('LIF_simulations/'+folder+'/lif_nu_X','wb'))
+                    
+                    for i, Y in enumerate(LIF_net.LIF_params['X']):
+                        pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['times'],
+                                    open('LIF_simulations/'+folder+'/times_'+Y,'wb'))
+                        pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['senders'],
+                                    open('LIF_simulations/'+folder+'/gids_'+Y,'wb'))
 
                     print('Done!\n',end=' ', flush=True)
 
                     # Check size and remove simulations with large files
-                    th = 10 # MB
+                    th = 25 # MB
                     os.chdir('LIF_simulations')
                     print("\nFolder size: %s MB\n" % str(get_size(
                                                     folder)/(2**20)))
