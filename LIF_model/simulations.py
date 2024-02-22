@@ -112,23 +112,23 @@ for J_EE in [1.589]:
                         lif_mean_nu_X[X] = LIF_net.get_mean_spike_rate(times)
                         bins, lif_nu_X[X] = LIF_net.get_spike_rate(times)
 
-                    # # compute LFP signals
-                    # probe = 'GaussCylinderPotential'
-                    # LFP_data = dict(EE = [],EI = [],IE = [],II = [])
-                    #
-                    # for X in LIF_net.LIF_params['X']:
-                    #     for Y in LIF_net.LIF_params['X']:
-                    #         n_ch = LIF_net.H_YX[f'{X}:{Y}'][probe].shape[0]
-                    #         for ch in range(n_ch):
-                    #             # LFP kernel at electrode 'ch'
-                    #             kernel = LIF_net.H_YX[f'{X}:{Y}'][probe][ch,:]
-                    #             # LFP signal
-                    #             sig = np.convolve(lif_nu_X[X], kernel, 'same')
-                    #             # Decimate signal (x10)
-                    #             LFP_data[f'{X}{Y}'].append(ss.decimate(
-                    #                                         sig,
-                    #                                         q=10,
-                    #                                         zero_phase=True))
+                    # compute LFP signals
+                    probe = 'GaussCylinderPotential'
+                    LFP_data = dict(EE = [],EI = [],IE = [],II = [])
+                    
+                    for X in LIF_net.LIF_params['X']:
+                        for Y in LIF_net.LIF_params['X']:
+                            n_ch = LIF_net.H_YX[f'{X}:{Y}'][probe].shape[0]
+                            for ch in range(n_ch):
+                                # LFP kernel at electrode 'ch'
+                                kernel = LIF_net.H_YX[f'{X}:{Y}'][probe][ch,:]
+                                # LFP signal
+                                sig = np.convolve(lif_nu_X[X], kernel, 'same')
+                                # Decimate signal (x10)
+                                LFP_data[f'{X}{Y}'].append(ss.decimate(
+                                                            sig,
+                                                            q=10,
+                                                            zero_phase=True))
 
                     # compute CDM
                     probe = 'KernelApproxCurrentDipoleMoment'
@@ -152,7 +152,7 @@ for J_EE in [1.589]:
                     pickle.dump(LIF_net.tstop,open('LIF_simulations/'+folder+'/tstop','wb'))
                     pickle.dump(LIF_net.tau,open('LIF_simulations/'+folder+'/tau','wb'))
 
-                    # pickle.dump(LFP_data,open('LIF_simulations/'+folder+'/LFP_data','wb'))
+                    pickle.dump(LFP_data,open('LIF_simulations/'+folder+'/LFP_data','wb'))
                     pickle.dump(CDM_data,open('LIF_simulations/'+folder+'/CDM_data','wb'))
                     pickle.dump(lif_mean_nu_X,open('LIF_simulations/'+folder+'/lif_mean_nu_X','wb'))
                     pickle.dump([bins, lif_nu_X],open('LIF_simulations/'+folder+'/lif_nu_X','wb'))

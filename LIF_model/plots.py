@@ -38,7 +38,7 @@ LIF_net.tstop = pickle.load(open(path+'/tstop','rb'))
 LIF_net.tau = pickle.load(open(path+'/tau','rb'))
 
 LIF_net.H_YX = pickle.load(open(data_path+'/H_YX','rb'))
-# LFP_data = pickle.load(open(path+'/LFP_data','rb'))
+LFP_data = pickle.load(open(path+'/LFP_data','rb'))
 CDM_data = pickle.load(open(path+'/CDM_data','rb'))
 lif_mean_nu_X = pickle.load(open(path+'/lif_mean_nu_X','rb'))
 [bins, lif_nu_X] = pickle.load(open(path+'/lif_nu_X','rb'))
@@ -122,11 +122,11 @@ for X in LIF_net.LIF_params['X']:
                                     np.arange(int(time.shape[0]/2),
                                               int(3*time.shape[0]/4)))
             # z-scored LFP signal from T[0] to T[1]
-            # maxs,norm_sig = zscore(LFP_data[f'{X}{Y}'],ch,ii[:-1])
+            maxs,norm_sig = zscore(LFP_data[f'{X}{Y}'],ch,ii[:-1])
             # plot data stacked in the Z-axis
             ax1[k].plot(time[int(time.shape[0]/2):int(3*time.shape[0]/4)],
                         norm_ker - ch)
-            # ax2[k].plot(bins[ii],norm_sig - ch)
+            ax2[k].plot(bins[ii],norm_sig - ch)
         ax1[k].set_title(f'H_{X}:{Y}')
         ax2[k].set_title(f'H_{X}:{Y}')
         if k == 0:
@@ -147,10 +147,10 @@ for X in LIF_net.LIF_params['X']:
                      [0,-1],linewidth = 2., color = 'k')
         sexp = np.round(np.log2(maxk))
         ax1[k].text(time[int(0.6*time.shape[0])],-0.5,r'$2^{%s}mV$' % sexp)
-        # ax2[k].plot([bins[iii],bins[iii]],
-        #              [0,-1],linewidth = 2., color = 'k')
-        # sexp = np.round(np.log2(maxs))
-        # ax2[k].text(bins[iii],-0.5,r'$2^{%s}mV$' % sexp)
+        ax2[k].plot([bins[iii],bins[iii]],
+                     [0,-1],linewidth = 2., color = 'k')
+        sexp = np.round(np.log2(maxs))
+        ax2[k].text(bins[iii],-0.5,r'$2^{%s}mV$' % sexp)
         k+=1
 
 # Current dipole moment
