@@ -27,7 +27,7 @@ LIF_net = LIF_network.LIF_network()
 
 # Load data
 # path to simulation data
-data_path = '/home/alejandro/Escritorio/TFG/TFG/LIF_model/LIF_simulations/'
+data_path = '/home/alejandro/Escritorio/TFG/TFG/LIF_model/LIF_simulations_plots/'
 folder = '366d208871265d6c6dac42abaf93a19b'
 path = data_path+folder
 
