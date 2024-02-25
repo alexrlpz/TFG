@@ -19,7 +19,7 @@ from sbi.inference import SNPE
 from sbi.utils.get_nn_models import posterior_nn
 
 # path to simulation data
-data_path = '/media/pablo/TOSHIBA EXT/LIF_model_simulations'
+data_path = '/home/alejandro/Escritorio/TFG/TFG/LIF_model/LIF_simulations'
 
 # parameters of the LIF_network object
 theta_data = {'parameters':['J_EE',
