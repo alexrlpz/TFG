@@ -33,7 +33,7 @@ if not os.path.isdir('LIF_simulations'):
     os.mkdir('LIF_simulations')
 
 # ground truth parameters
-n_simulations = 5
+n_simulations = 1
 currentsim = 1
 for J_EE in [1.589]:
     for J_IE in [2.020]:
