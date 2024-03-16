@@ -29,8 +29,8 @@ def get_size(start_path = '.'):
     return total_size
 
 # Create root folder
-if not os.path.isdir('LIF_simulations'):
-    os.mkdir('LIF_simulations')
+if not os.path.isdir('LIF_simulations_plots'):
+    os.mkdir('LIF_simulations_plots')
 
 # ground truth parameters
 n_simulations = 1
@@ -68,21 +68,21 @@ for J_EE in [1.589]:
                                         sort_keys=True).encode()
                         folder = hashlib.md5(js_0).hexdigest()
                         # Create folder
-                        if not os.path.isdir('LIF_simulations/'+folder):
-                            os.mkdir('LIF_simulations/'+folder)
+                        if not os.path.isdir('LIF_simulations_plots/'+folder):
+                            os.mkdir('LIF_simulations_plots/'+folder)
 
                         # create the LIF_network object
                         LIF_net = LIF_network.LIF_network()
 
                         # load/create kernel
                         try:
-                            LIF_net.H_YX = pickle.load(open('LIF_simulations/H_YX','rb'))
+                            LIF_net.H_YX = pickle.load(open('LIF_simulations_plots/H_YX','rb'))
                         except (FileNotFoundError, IOError):
                             print("\nKernel not found. Computing kernel...\n",
                                 end=' ', flush=True)
                             LIF_net.create_kernel()
                             # Save kernel to file
-                            pickle.dump(LIF_net.H_YX,open('LIF_simulations/H_YX','wb'))
+                            pickle.dump(LIF_net.H_YX,open('LIF_simulations_plots/H_YX','wb'))
 
                         # Modify parameters
                         LIF_net.LIF_params['J_YX'] = [[J_EE, J_IE], [J_EI, J_II]]
@@ -112,23 +112,23 @@ for J_EE in [1.589]:
                             lif_mean_nu_X[X] = LIF_net.get_mean_spike_rate(times)
                             bins, lif_nu_X[X] = LIF_net.get_spike_rate(times)
 
-                        # # compute LFP signals
-                        # probe = 'GaussCylinderPotential'
-                        # LFP_data = dict(EE = [],EI = [],IE = [],II = [])
-                        #
-                        # for X in LIF_net.LIF_params['X']:
-                        #     for Y in LIF_net.LIF_params['X']:
-                        #         n_ch = LIF_net.H_YX[f'{X}:{Y}'][probe].shape[0]
-                        #         for ch in range(n_ch):
-                        #             # LFP kernel at electrode 'ch'
-                        #             kernel = LIF_net.H_YX[f'{X}:{Y}'][probe][ch,:]
-                        #             # LFP signal
-                        #             sig = np.convolve(lif_nu_X[X], kernel, 'same')
-                        #             # Decimate signal (x10)
-                        #             LFP_data[f'{X}{Y}'].append(ss.decimate(
-                        #                                         sig,
-                        #                                         q=10,
-                        #                                         zero_phase=True))
+                        # compute LFP signals
+                        probe = 'GaussCylinderPotential'
+                        LFP_data = dict(EE = [],EI = [],IE = [],II = [])
+                        
+                        for X in LIF_net.LIF_params['X']:
+                            for Y in LIF_net.LIF_params['X']:
+                                n_ch = LIF_net.H_YX[f'{X}:{Y}'][probe].shape[0]
+                                for ch in range(n_ch):
+                                    # LFP kernel at electrode 'ch'
+                                    kernel = LIF_net.H_YX[f'{X}:{Y}'][probe][ch,:]
+                                    # LFP signal
+                                    sig = np.convolve(lif_nu_X[X], kernel, 'same')
+                                    # Decimate signal (x10)
+                                    LFP_data[f'{X}{Y}'].append(ss.decimate(
+                                                                sig,
+                                                                q=10,
+                                                                zero_phase=True))
 
                         # compute CDM
                         probe = 'KernelApproxCurrentDipoleMoment'
@@ -146,31 +146,28 @@ for J_EE in [1.589]:
 
                         # Save simulation data to file
                         print('Saving data...\n',end=' ', flush=True)
-                        pickle.dump(LIF_net.LIF_params,open('LIF_simulations/'+folder+'/LIF_params','wb'))
-                        pickle.dump(LIF_net.TRANSIENT,open('LIF_simulations/'+folder+'/TRANSIENT','wb'))
-                        pickle.dump(LIF_net.dt,open('LIF_simulations/'+folder+'/dt','wb'))
-                        pickle.dump(LIF_net.tstop,open('LIF_simulations/'+folder+'/tstop','wb'))
-                        pickle.dump(LIF_net.tau,open('LIF_simulations/'+folder+'/tau','wb'))
+                        pickle.dump(LIF_net.LIF_params,open('LIF_simulations_plots/'+folder+'/LIF_params','wb'))
+                        pickle.dump(LIF_net.TRANSIENT,open('LIF_simulations_plots/'+folder+'/TRANSIENT','wb'))
+                        pickle.dump(LIF_net.dt,open('LIF_simulations_plots/'+folder+'/dt','wb'))
+                        pickle.dump(LIF_net.tstop,open('LIF_simulations_plots/'+folder+'/tstop','wb'))
+                        pickle.dump(LIF_net.tau,open('LIF_simulations_plots/'+folder+'/tau','wb'))
 
-                        # pickle.dump(LFP_data,open('LIF_simulations/'+folder+'/LFP_data','wb'))
-                        pickle.dump(CDM_data['EE']+\
-                                    CDM_data['EI']+\
-                                    CDM_data['IE']+\
-                                    CDM_data['II'],open('LIF_simulations/'+folder+'/CDM_data','wb'))
-                        # pickle.dump(lif_mean_nu_X,open('LIF_simulations/'+folder+'/lif_mean_nu_X','wb'))
-                        # pickle.dump([bins, lif_nu_X],open('LIF_simulations/'+folder+'/lif_nu_X','wb'))
-                        #
-                        # for i, Y in enumerate(LIF_net.LIF_params['X']):
-                        #     pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['times'],
-                        #                 open('LIF_simulations/'+folder+'/times_'+Y,'wb'))
-                        #     pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['senders'],
-                        #                 open('LIF_simulations/'+folder+'/gids_'+Y,'wb'))
+                        pickle.dump(LFP_data,open('LIF_simulations_plots/'+folder+'/LFP_data','wb'))
+                        pickle.dump(CDM_data,open('LIF_simulations_plots/'+folder+'/CDM_data','wb'))
+                        pickle.dump(lif_mean_nu_X,open('LIF_simulations_plots/'+folder+'/lif_mean_nu_X','wb'))
+                        pickle.dump([bins, lif_nu_X],open('LIF_simulations_plots/'+folder+'/lif_nu_X','wb'))
+                        
+                        for i, Y in enumerate(LIF_net.LIF_params['X']):
+                            pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['times'],
+                                        open('LIF_simulations_plots/'+folder+'/times_'+Y,'wb'))
+                            pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['senders'],
+                                        open('LIF_simulations_plots/'+folder+'/gids_'+Y,'wb'))
 
-                        print('Done!\n',end=' ', flush=True)
+                            print('Done!\n',end=' ', flush=True)
 
                         # Check size and remove simulations with large files
-                        th = 10 # MB
-                        os.chdir('LIF_simulations')
+                        th = 25 # MB
+                        os.chdir('LIF_simulations_plots')
                         print("\nFolder size: %s MB\n" % str(get_size(
                                                         folder)/(2**20)))
                         if get_size(folder)/(2**20) > th:
