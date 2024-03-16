@@ -37,7 +37,8 @@ for i,folder in enumerate(ldir):
     # load CDMs
     try:
         cdm = pickle.load(open(os.path.join(data_path,folder,"CDM_data"),'rb'))
-        CDM_data.append(cdm)
+        current_data = cdm[f'{"E"}{"E"}']+cdm[f'{"E"}{"I"}']+cdm[f'{"I"}{"E"}']+cdm[f'{"I"}{"I"}']
+        CDM_data.append(current_data)
     except (FileNotFoundError, IOError):
         print(f'File CDM_data not found in {folder}')
 
