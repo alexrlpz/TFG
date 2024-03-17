@@ -40,53 +40,56 @@ LIF_net.tau = pickle.load(open(path+'/tau','rb'))
 LIF_net.H_YX = pickle.load(open(data_path+'/H_YX','rb'))
 LFP_data = pickle.load(open(path+'/LFP_data','rb'))
 CDM_data = pickle.load(open(path+'/CDM_data','rb'))
-lif_mean_nu_X = pickle.load(open(path+'/lif_mean_nu_X','rb'))
+lif_mean_nu_X = pickle.load(open(path+'/lif_mean_nu_X','rb'))  # mean spike rates
 [bins, lif_nu_X] = pickle.load(open(path+'/lif_nu_X','rb'))
 
 # Plot spikes and firing rates
 fig = plt.figure(figsize=[6,5], dpi=150)
-ax1 = fig.add_axes([0.15,0.45,0.75,0.5])
-ax2 = fig.add_axes([0.15,0.08,0.75,0.3])
-
 T = [4000, 4100]
+
 # Spikes
-for i, Y in enumerate(LIF_net.LIF_params['X']):
-    times = pickle.load(open(path+'/times_'+Y,'rb'))
-    gids = pickle.load(open(path+'/gids_'+Y,'rb'))
-    gids = gids[times >= LIF_net.TRANSIENT]
+ax1 = fig.add_axes([0.15,0.45,0.75,0.5])
+ax1.set_title('Network spike raster')
+for i, Y in enumerate(LIF_net.LIF_params['X']):       # X = ['E', 'I'] -> hace dos iteraciones, 0 E , 1 I
+    times = pickle.load(open(path+'/times_'+Y,'rb'))  # Pilla times_E y times_I
+    gids = pickle.load(open(path+'/gids_'+Y,'rb'))    # gids_E y gids_I
+    gids = gids[times >= LIF_net.TRANSIENT]           # TRANSIENT = 2000, filtra los elementos de gids que están asociados con los tiempos que son mayores o iguales a TRANSIENT.
     times = times[times >= LIF_net.TRANSIENT]
 
-    ii = (times >= T[0]) & (times <= T[1])
+    ii = (times >= T[0]) & (times <= T[1])             # crear un array booleano ii que indica si cada elemento de la variable times está dentro del rango definido por T.
     ax1.plot(times[ii], gids[ii], '.',
-            mfc='C{}'.format(i),
-            mec='w',
+            mfc='C{}'.format(i),                                            # formato colores etc
+            mec='w',                                                         # color w white
             label=r'$\langle \nu_\mathrm{%s} \rangle =%.2f$ s$^{-1}$' % (
-                Y, lif_mean_nu_X[Y] / LIF_net.LIF_params['N_X'][i])
-           )
-ax1.legend(loc=1)
-ax1.axis('tight')
-ax1.set_xticklabels([])
-ax1.set_ylabel('gid', labelpad=0)
+                Y, lif_mean_nu_X[Y] / LIF_net.LIF_params['N_X'][i])         # lif_mean_nu, mean spike rates ||| N_X=[8192, 1024] 
+           )                                                                # divide la tasa media de disparo de la población entre el nº de neuronas de la población 
+ax1.legend(loc=1)                                                           # añadir leyenda, en Matplotlib, loc=1 suele referirse a la esquina superior derecha del gráfico.
+ax1.axis('tight')                                                           # formato
+ax1.set_xticklabels([])                                                     # eliminar etiquetas del eje x
+ax1.set_ylabel('gid', labelpad=0)                                           # añade label al eje y, "gid", que debe ser group id
 
 # Rates
+ax2 = fig.add_axes([0.15,0.08,0.75,0.3])
+ax2.set_title('Per-population spike-count histograms')
 Delta_t = LIF_net.dt
 binsr = np.linspace(T[0], T[1], int(np.diff(T) / Delta_t + 1))
 
 for i, Y in enumerate(LIF_net.LIF_params['X']):
     times = pickle.load(open(path+'/times_'+Y,'rb'))
     ii = (times >= T[0]) & (times <= T[1])
-    ax2.hist(times[ii], bins=binsr, histtype='step')
+    ax2.hist(times[ii], bins=binsr, histtype='step', label = r'$V_{\mathrm{%s}}$' % Y)
 
 ax2.axis('tight')
+ax2.legend(loc=1, handlelength=1)
 ax2.set_xlabel('t (ms)', labelpad=0)
 ax2.set_ylabel(r'$\nu_X$ (spikes/$\Delta t$)', labelpad=0)
 
-plt.show()
-
-# Plot kernels and LFP/CDM data
+# Plot kernels and LFP/CDM data                         # kernel -> Spike-signal impulse response function 
 # Create figure and panels
 fig1 = plt.figure(figsize=[7,6], dpi=150)
+fig1.suptitle("Kernels for extracellular potentials and CDM")
 fig2 = plt.figure(figsize=[7,6], dpi=150)
+fig2.suptitle("Extracellular potentials and component of the CDM (z-axis)")
 ax1 = []
 ax2 = []
 

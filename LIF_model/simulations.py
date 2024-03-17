@@ -137,30 +137,30 @@ for J_EE in [1.589]:
                         for X in LIF_net.LIF_params['X']:
                             for Y in LIF_net.LIF_params['X']:
                                 # Pick only the z-component of the CDM kernel
-                                kernel = LIF_net.H_YX[f'{X}:{Y}'][probe][2,:]
+                                kernel = LIF_net.H_YX[f'{X}:{Y}'][probe][2,:]           # utilizamos solo componente z, igual que en artículo
                                 # CDM
                                 sig = np.convolve(lif_nu_X[X], kernel, 'same')
                                 CDM_data[f'{X}{Y}'] = ss.decimate(sig,
                                                                 q=10,
-                                                                zero_phase=True)
+                                                                zero_phase=True) 
 
                         # Save simulation data to file
                         print('Saving data...\n',end=' ', flush=True)
-                        pickle.dump(LIF_net.LIF_params,open('LIF_simulations/'+folder+'/LIF_params','wb'))
-                        pickle.dump(LIF_net.TRANSIENT,open('LIF_simulations/'+folder+'/TRANSIENT','wb'))
-                        pickle.dump(LIF_net.dt,open('LIF_simulations/'+folder+'/dt','wb'))
-                        pickle.dump(LIF_net.tstop,open('LIF_simulations/'+folder+'/tstop','wb'))
-                        pickle.dump(LIF_net.tau,open('LIF_simulations/'+folder+'/tau','wb'))
+                        pickle.dump(LIF_net.LIF_params,open('LIF_simulations/'+folder+'/LIF_params','wb'))     # parámetros simulación, tamaño poblaciones etc 
+                        pickle.dump(LIF_net.TRANSIENT,open('LIF_simulations/'+folder+'/TRANSIENT','wb'))       # tiempo transitorio
+                        pickle.dump(LIF_net.dt,open('LIF_simulations/'+folder+'/dt','wb'))                     # delta time, paso del tiempo
+                        pickle.dump(LIF_net.tstop,open('LIF_simulations/'+folder+'/tstop','wb'))               # tiempo máximo, momento de parada
+                        pickle.dump(LIF_net.tau,open('LIF_simulations/'+folder+'/tau','wb'))                   # time lag relative to spike for kernel predictions
 
                         pickle.dump(LFP_data,open('LIF_simulations/'+folder+'/LFP_data','wb'))
                         pickle.dump(CDM_data,open('LIF_simulations/'+folder+'/CDM_data','wb'))
-                        pickle.dump(lif_mean_nu_X,open('LIF_simulations/'+folder+'/lif_mean_nu_X','wb'))
-                        pickle.dump([bins, lif_nu_X],open('LIF_simulations/'+folder+'/lif_nu_X','wb'))
+                        pickle.dump(lif_mean_nu_X,open('LIF_simulations/'+folder+'/lif_mean_nu_X','wb'))       # mean spike rates
+                        pickle.dump([bins, lif_nu_X],open('LIF_simulations/'+folder+'/lif_nu_X','wb'))         # binned firing rate 
                         
                         for i, Y in enumerate(LIF_net.LIF_params['X']):
-                            pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['times'],
+                            pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['times'],           # time será el momento del spike?
                                         open('LIF_simulations/'+folder+'/times_'+Y,'wb'))
-                            pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['senders'],
+                            pickle.dump(nest.GetStatus(LIF_net.spike_recorders[Y])[0]['events']['senders'],         # senders puede ser ids de las neuronas que lo generan
                                         open('LIF_simulations/'+folder+'/gids_'+Y,'wb'))
 
                             print('Done!\n',end=' ', flush=True)
