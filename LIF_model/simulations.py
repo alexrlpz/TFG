@@ -33,27 +33,24 @@ if not os.path.isdir('LIF_simulations'):
     os.mkdir('LIF_simulations')
 
 # ground truth parameters
-n_simulations = 1
+# n_simulations = 1
 currentsim = 1
-for J_EE in [1.589]:
-    for J_IE in [2.020]:
-       for J_EI in [-23.84]:
-           for J_II in [-8.441]:
+# for J_EE in [1.589]:
+#     for J_IE in [2.020]:
+#        for J_EI in [-23.84]:
+#            for J_II in [-8.441]:
 
 # Exploration of LIF network parameters
 
-#for J_EE in np.linspace(0.5,4.,10):
-    #for J_IE in np.linspace(0.5,4.,10):
-        #for J_EI in np.linspace(-40.,-1.,10):
-            #for J_II in np.linspace(-40.,-1.,10):
-                if (currentsim <= n_simulations):
+for J_EE in np.linspace(0.5,4.,10):
+    for J_IE in np.linspace(0.5,4.,10):
+        for J_EI in np.linspace(-40.,-1.,10):
+            for J_II in np.linspace(-40.,-1.,10):
                     print("\n-------------------\n",end=' ', flush=True)
                     print("\nJ_EE = %s, J_IE = %s, J_EI = %s, J_II = %s,\n" % (
                         J_EE,J_IE,J_EI,J_II),
                         end=' ', flush=True)
-                    print("Computing simulation %s out of %s\n" % (currentsim,
-                                                                n_simulations),
-                                                                end=' ', flush=True)
+                    print("Computing simulation %s " % (currentsim), end=' ', flush=True)
                     currentsim+=1
                     # constraints on the parameter space search
                     if (-J_EI > 2.*J_EE) and (-J_EI > 2.*J_IE) and\
@@ -61,17 +58,21 @@ for J_EE in [1.589]:
                         enable = True
                     else:
                         enable = False
-
+                        print("Parameters aren't on the space search")
                     if enable:
                         # Create hash
                         js_0 = json.dumps([J_EE,J_IE,J_EI,J_II],
                                         sort_keys=True).encode()
                         folder = hashlib.md5(js_0).hexdigest()
+                        print("\nFolder: " + folder)
                         # Create folder
-                        if not os.path.isdir('LIF_simulations/'+folder):
-                            os.mkdir('LIF_simulations/'+folder)
-
-                        # create the LIF_network object
+                        if os.path.isdir('LIF_simulations/'+folder):
+                            enable = False
+                            print("Parameters already used")
+                            
+                            
+                    if enable:
+                        os.mkdir('LIF_simulations/'+folder)
                         LIF_net = LIF_network.LIF_network()
 
                         # load/create kernel
@@ -166,7 +167,7 @@ for J_EE in [1.589]:
                             print('Done!\n',end=' ', flush=True)
 
                         # Check size and remove simulations with large files
-                        th = 50 # MB
+                        th = 500 # MB
                         os.chdir('LIF_simulations')
                         print("\nFolder size: %s MB\n" % str(get_size(
                                                         folder)/(2**20)))
