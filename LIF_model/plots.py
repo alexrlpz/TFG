@@ -32,6 +32,8 @@ folder = '366d208871265d6c6dac42abaf93a19b'
 path = data_path+folder
 
 LIF_net.LIF_params = pickle.load(open(path+'/LIF_params','rb'))
+print("\nSIMULATION PARAMS: \n")
+print(LIF_net.LIF_params)
 LIF_net.TRANSIENT = pickle.load(open(path+'/TRANSIENT','rb'))
 LIF_net.dt = pickle.load(open(path+'/dt','rb'))
 LIF_net.tstop = pickle.load(open(path+'/tstop','rb'))
@@ -198,4 +200,19 @@ for X in LIF_net.LIF_params['X']:
         ax2[k+4].text(bins[iii],-0.5,r'$2^{%s}nAcm$' % sexp)
         k+=1
 
+plt.show()
+
+
+# Power spectra
+fig = plt.figure(figsize=[4,2], dpi=150)
+T = [4000, 4100]
+
+ax1 = fig.add_axes([0.15,0.25,0.8,0.5])
+ax1.set_title('CDM power spectrum')
+
+for i, Y in enumerate(LIF_net.LIF_params['X']):
+    frequencies, power_spectra = ss.welch(norm_sig, fs=1.0)
+    plt.semilogy(frequencies, power_spectra)
+
+ax1.legend(loc=1)  
 plt.show()
