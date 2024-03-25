@@ -17,6 +17,7 @@ from sbi import analysis as analysis
 from sbi.neural_nets.embedding_nets import FCEmbedding
 from sbi.inference import SNPE
 from sbi.utils.get_nn_models import posterior_nn
+from sklearn.model_selection import KFold
 
 # path to simulation data
 data_path = '/home/alejandro/Escritorio/TFG/TFG/LIF_model/LIF_simulations'
@@ -85,10 +86,21 @@ density_estimator_build_fun = posterior_nn(
 )
 inference = SNPE(density_estimator=density_estimator_build_fun)
 
+# create splits of the 10-fold CV
+kfold = KFold(n_splits=10, shuffle=True)
+for kf, (train_index, test_index) in enumerate(kfold.split(CDM_data)):
+        # training data
+        train_theta = theta_data['data'][train_index,:]
+        train_CDM = CDM_data[train_index,:]
+        # test data
+        test_theta = theta_data['data'][test_index,:]
+        test_CDM = CDM_data[test_index,:]
+
+
 # pass the simulated data to the inference object.
 inference.append_simulations(
-        torch.from_numpy(np.array(theta_data['data'],dtype=np.float32)),
-        torch.from_numpy(np.array(CDM_data,dtype=np.float32)))
+        torch.from_numpy(np.array(train_theta,dtype=np.float32)),
+        torch.from_numpy(np.array(train_CDM,dtype=np.float32)))
 
 # train the neural density estimator
 density_estimator = inference.train()
@@ -99,21 +111,21 @@ posterior = inference.build_posterior(density_estimator)
 
 # Test the trained posterior
 print('\n')
-while(True):
+for i in range(0,10):
     # Randomly pick a sample
-    sample = int(np.random.uniform(low = 0, high = len(theta_data['data'])))
-    print("Test sample: ", theta_data['data'][sample])
+    sample = int(np.random.uniform(low = 0, high = len(test_theta)))
+    print("Test sample: ", test_theta[sample])
     theta_o = torch.from_numpy(
-                np.array(theta_data['data'][sample],dtype=np.float32))
+                np.array(test_theta[sample],dtype=np.float32))  # Parámetros de esa simulación 
     x_o = torch.from_numpy(
-                np.array(CDM_data[sample],dtype=np.float32))
-    # Sample the posterior
+                np.array(test_CDM[sample],dtype=np.float32))  # Valores del CDM para esa simulación 
+    # Sample the posterior    
     posterior_samples = posterior.sample((5000,), x=x_o)
 
     # Plot posterior samples
     _ = analysis.pairplot(
         samples = posterior_samples,
-        points=[theta_o],
+        points=[theta_o],                       # Parámetros de la simulación 
         limits=None,
         figsize=(8, 5),
         upper="hist",
