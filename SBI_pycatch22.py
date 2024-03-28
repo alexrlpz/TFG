@@ -9,6 +9,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import pycatch22
 
 # Torch and SBI libraries
 import torch
@@ -58,22 +59,19 @@ for i,folder in enumerate(ldir):
 theta_data['data'] = np.array(theta_data['data'])
 CDM_data = np.array(CDM_data)
 
-# # create folder
-# if not os.path.isdir('data'):
-#     os.mkdir('data')
-# # save data arrays to file
-# pickle.dump(theta_data,open('data/theta_data','wb'))
-# pickle.dump(CDM_data,open('data/CDM_data','wb'))
-# load data arrays from file
-# theta_data = pickle.load(open('data/theta_data','rb'))
-# CDM_data = pickle.load(open('data/CDM_data','rb'))
-
 # remove the first 500 samples (transient response from convolution)
-CDM_data = CDM_data[:,500:]
+CDM_data = CDM_data[:,500:]                                                 # se queda un numpy array de shape (1002, 15500)
+CDM_data_reshaped = []
+
+for i in range(0,CDM_data.shape[0]):                                        # de 0 a 1002
+    CDM_data_reshaped.append(CDM_data[i,:])                                 # añade cada numpy array con los datos de cada simulación (15500 valores)
+
+features = np.array([pycatch22.catch22_all(CDM_data_reshaped[i])['values'] for i in range(len(CDM_data_reshaped))])  # features.shape = (1002, 22)
+
 
 # pre-configured embedding network
 embedding_net = FCEmbedding(
-    input_dim=CDM_data.shape[1],
+    input_dim=features.shape[1],
     num_hiddens=100,
     num_layers=2,
     output_dim=20,
@@ -88,19 +86,22 @@ inference = SNPE(density_estimator=density_estimator_build_fun)
 
 # create splits of the 10-fold CV
 kfold = KFold(n_splits=10, shuffle=True)
-for kf, (train_index, test_index) in enumerate(kfold.split(CDM_data)):
-        # training data
+for kf, (train_index, test_index) in enumerate(kfold.split(features)):
+        # TRAINING DATA
         train_theta = theta_data['data'][train_index,:]
-        train_CDM = CDM_data[train_index,:]
-        # test data
+        #train_CDM = CDM_data[train_index,:]
+        train_features = features[train_index,:]
+        
+        # TEST DATA
         test_theta = theta_data['data'][test_index,:]
-        test_CDM = CDM_data[test_index,:]
+        #test_CDM = CDM_data[test_index,:]
+        test_features = features[test_index,:]
 
 
 # pass the simulated data to the inference object.
 inference.append_simulations(
         torch.from_numpy(np.array(train_theta,dtype=np.float32)),
-        torch.from_numpy(np.array(train_CDM,dtype=np.float32)))
+        torch.from_numpy(np.array(train_features,dtype=np.float32)))
 
 # train the neural density estimator
 density_estimator = inference.train()
@@ -118,7 +119,7 @@ for i in range(0,10):
     theta_o = torch.from_numpy(
                 np.array(test_theta[sample],dtype=np.float32))  # Parámetros de esa simulación 
     x_o = torch.from_numpy(
-                np.array(test_CDM[sample],dtype=np.float32))  # Valores del CDM para esa simulación 
+                np.array(test_features[sample],dtype=np.float32))  # Valores del CDM para esa simulación 
     # Sample the posterior    
     posterior_samples = posterior.sample((5000,), x=x_o)
 
