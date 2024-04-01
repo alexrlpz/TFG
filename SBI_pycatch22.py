@@ -61,6 +61,8 @@ CDM_data = np.array(CDM_data)
 
 # remove the first 500 samples (transient response from convolution)
 CDM_data = CDM_data[:,500:]                                                 # se queda un numpy array de shape (1002, 15500)
+
+# Features
 CDM_data_reshaped = []
 
 for i in range(0,CDM_data.shape[0]):                                        # de 0 a 1002
@@ -68,10 +70,14 @@ for i in range(0,CDM_data.shape[0]):                                        # de
 
 features = np.array([pycatch22.catch22_all(CDM_data_reshaped[i])['values'] for i in range(len(CDM_data_reshaped))])  # features.shape = (1002, 22)
 
+# Z-Score normalization
+media = np.mean(features, axis=0)
+std_dev = np.std(features, axis=0)
+features_norm = (features - media) / std_dev
 
 # pre-configured embedding network
 embedding_net = FCEmbedding(
-    input_dim=features.shape[1],
+    input_dim=features_norm.shape[1],
     num_hiddens=100,
     num_layers=2,
     output_dim=20,
@@ -86,16 +92,16 @@ inference = SNPE(density_estimator=density_estimator_build_fun)
 
 # create splits of the 10-fold CV
 kfold = KFold(n_splits=10, shuffle=True)
-for kf, (train_index, test_index) in enumerate(kfold.split(features)):
+for kf, (train_index, test_index) in enumerate(kfold.split(features_norm)):
         # TRAINING DATA
         train_theta = theta_data['data'][train_index,:]
         #train_CDM = CDM_data[train_index,:]
-        train_features = features[train_index,:]
+        train_features = features_norm[train_index,:]
         
         # TEST DATA
         test_theta = theta_data['data'][test_index,:]
         #test_CDM = CDM_data[test_index,:]
-        test_features = features[test_index,:]
+        test_features = features_norm[test_index,:]
 
 
 # pass the simulated data to the inference object.
@@ -112,7 +118,7 @@ posterior = inference.build_posterior(density_estimator)
 
 # Test the trained posterior
 print('\n')
-for i in range(0,10):
+for i in range(0,100):
     # Randomly pick a sample
     sample = int(np.random.uniform(low = 0, high = len(test_theta)))
     print("Test sample: ", test_theta[sample])

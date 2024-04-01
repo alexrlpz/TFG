@@ -61,9 +61,14 @@ CDM_data = np.array(CDM_data)
 # remove the first 500 samples (transient response from convolution)
 CDM_data = CDM_data[:,500:]                                                 # se queda un numpy array de shape (1002, 15500)
 
+# Z-Score normalization
+media = np.mean(CDM_data, axis=0)
+std_dev = np.std(CDM_data, axis=0)
+CDM_data_norm = (CDM_data - media) / std_dev
+
 # pre-configured embedding network
 embedding_net = FCEmbedding(
-    input_dim=CDM_data.shape[1],
+    input_dim=CDM_data_norm.shape[1],
     num_hiddens=100,
     num_layers=2,
     output_dim=20,
@@ -78,13 +83,13 @@ inference = SNPE(density_estimator=density_estimator_build_fun)
 
 # create splits of the 10-fold CV
 kfold = KFold(n_splits=10, shuffle=True)
-for kf, (train_index, test_index) in enumerate(kfold.split(CDM_data)):
+for kf, (train_index, test_index) in enumerate(kfold.split(CDM_data_norm)):
         # training data
         train_theta = theta_data['data'][train_index,:]
-        train_CDM = CDM_data[train_index,:]
+        train_CDM = CDM_data_norm[train_index,:]
         # test data
         test_theta = theta_data['data'][test_index,:]
-        test_CDM = CDM_data[test_index,:]
+        test_CDM = CDM_data_norm[test_index,:]
 
 
 # pass the simulated data to the inference object.
