@@ -128,6 +128,20 @@ for i in range(0,100):
                 np.array(test_features[sample],dtype=np.float32))  # Valores del CDM para esa simulación 
     # Sample the posterior    
     posterior_samples = posterior.sample((5000,), x=x_o)
+    
+    # Parameter recovery error (PRE)
+    pre = []
+    for i in range(len(theta_o)):
+        error = 0
+        for j in range(len(posterior_samples)):
+            error += np.abs(posterior_samples[j][i] - theta_o[i])
+        
+        pre.append(error / 5000)
+        
+    print("\nPRE(J_EE): ", pre[0])
+    print("\nPRE(J_IE): ", pre[1])
+    print("\nPRE(J_EI): ", pre[2])
+    print("\nPRE(J_II): ", pre[3])
 
     # Plot posterior samples
     _ = analysis.pairplot(
