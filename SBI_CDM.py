@@ -111,7 +111,7 @@ for i in range(0,10):
     sample = int(np.random.uniform(low = 0, high = len(test_theta)))
     print("Test sample: ", test_theta[sample])
     theta_o = torch.from_numpy(
-                np.array(test_theta[sample],dtype=np.float32))  # Parámetros de esa simulación 
+                np.array(test_theta[sample],dtype=np.float32))  # Parámetros reales de esa simulación 
     x_o = torch.from_numpy(
                 np.array(test_CDM[sample],dtype=np.float32))  # Valores del CDM para esa simulación 
     # Sample the posterior    
@@ -132,14 +132,25 @@ for i in range(0,10):
     print("\nPRE(J_II): ", pre[3])
 
     # Plot posterior samples
-    _ = analysis.pairplot(
+    pairplot = analysis.pairplot(
         samples = posterior_samples,
         points=[theta_o],                       # Parámetros de la simulación 
         limits=None,
-        figsize=(8, 5),
+        figsize=(9.6, 6),
         upper="hist",
         points_colors=["red"],
         labels = theta_data['parameters'],
         points_offdiag=dict(marker="+", markersize=20)
     )
+    pairplot[0].figure.text(0.025, 0.025, 'theta_o: \n\n J_EE: ' + str("{:.1f}".format(theta_o[0].item())) + 
+                           '\n J_IE:  ' + str("{:.1f}".format(theta_o[1].item())) + 
+                           '\n J_EI: ' + str("{:.1f}".format(theta_o[2].item())) + 
+                           '\n J_II:  ' + str("{:.1f}".format(theta_o[3].item()))                   
+                            ,verticalalignment='bottom', fontsize=10)
+    
+    pairplot[0].figure.text(0.18, 0.025, 'PRE error: \n\n PRE(J_EE): ' + str("{:.2f}".format(pre[0].item())) + 
+                        '\n PRE(J_IE):  ' + str("{:.2f}".format(pre[1].item())) + 
+                        '\n PRE(J_EI): ' + str("{:.2f}".format(pre[2].item())) + 
+                        '\n PRE(J_II):  ' + str("{:.2f}".format(pre[3].item()))                   
+                        ,verticalalignment='bottom', fontsize=10)
     plt.show()
