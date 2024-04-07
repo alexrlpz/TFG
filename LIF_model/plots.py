@@ -28,7 +28,7 @@ LIF_net = LIF_network.LIF_network()
 # Load data
 # path to simulation data
 data_path = '/home/alejandro/Escritorio/TFG/TFG/LIF_model/LIF_simulations/'
-folder = '366d208871265d6c6dac42abaf93a19b'
+folder = 'ae15b9e197447950b3671c54e580acb0'
 path = data_path+folder
 
 LIF_net.LIF_params = pickle.load(open(path+'/LIF_params','rb'))
@@ -200,19 +200,25 @@ for X in LIF_net.LIF_params['X']:
         ax2[k+4].text(bins[iii],-0.5,r'$2^{%s}nAcm$' % sexp)
         k+=1
 
-plt.show()
 
-
-# Power spectra
-fig = plt.figure(figsize=[4,2], dpi=150)
+# Power spectrum
+fig = plt.figure(figsize=[6,5], dpi=150)
 T = [4000, 4100]
 
-ax1 = fig.add_axes([0.15,0.25,0.8,0.5])
+CDM_data_total = CDM_data['EE'] + CDM_data['IE'] + CDM_data['EI'] + CDM_data['II']
+maxs,norm_sig = zscore([1E-4*CDM_data_total],0,ii[:-1])
+
+ax1 = fig.add_axes([0.15,0.15,0.65,0.65])
 ax1.set_title('CDM power spectrum')
 
-for i, Y in enumerate(LIF_net.LIF_params['X']):
-    frequencies, power_spectra = ss.welch(norm_sig, fs=1.0)
-    plt.semilogy(frequencies, power_spectra)
 
-ax1.legend(loc=1)  
+frequencies, power_spectrum = ss.welch(norm_sig, fs=16.0)
+plt.semilogy(frequencies, power_spectrum)
+plt.xlabel('frequency [Hz]')
+plt.ylabel('PSD [V**2/Hz]')
+plt.text(1.05, 0.85, 'Parámetros: \n J_EE: ' + str(LIF_net.LIF_params['J_YX'][0][0]) + 
+                           '\n J_IE:  ' + str(LIF_net.LIF_params['J_YX'][0][1]) + 
+                           '\n J_EI: ' + str(LIF_net.LIF_params['J_YX'][1][0]) + 
+                           '\n J_II:  ' + str(LIF_net.LIF_params['J_YX'][1][1])                   
+                            ,transform=ax1.transAxes, verticalalignment='bottom', fontsize=8) 
 plt.show()
