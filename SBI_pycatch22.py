@@ -68,7 +68,7 @@ CDM_data_reshaped = []
 for i in range(0,CDM_data.shape[0]):                                        # de 0 a 1002
     CDM_data_reshaped.append(CDM_data[i,:])                                 # añade cada numpy array con los datos de cada simulación (15500 valores)
 
-features = np.array([pycatch22.catch22_all(CDM_data_reshaped[i],catch24=True)['values'] for i in range(len(CDM_data_reshaped))])  # features.shape = (1002, 22)
+features = np.array([pycatch22.catch22_all(CDM_data_reshaped[i])['values'] for i in range(len(CDM_data_reshaped))])  # features.shape = (1002, 22)
 
 # Z-Score normalization
 media = np.mean(features, axis=0)
@@ -142,6 +142,26 @@ for i in range(0,100):
     print("\nPRE(J_IE): ", pre[1])
     print("\nPRE(J_EI): ", pre[2])
     print("\nPRE(J_II): ", pre[3])
+        
+    # Posterior Predictive Checks (PPC)
+    PPC = 0
+    posterior_samples = np.array(posterior_samples)
+    x_o = np.array(x_o)
+    all_x_pp = []
+    
+    for i in range(len(posterior_samples)):
+        differences = np.abs(theta_data['data'] - posterior_samples[i])
+        total_differences = np.sum(differences, axis=1)
+        differences_ordered = np.argsort(total_differences)
+        closest_params_position = differences_ordered[0]
+        x_pp = features_norm[closest_params_position]
+        all_x_pp.append(x_pp)
+        features_errors = np.abs(x_pp-x_o)
+        total_posterior_error = np.sum(features_errors) / len(features_errors)
+        PPC += total_posterior_error
+        
+        
+    PPC = PPC / 5000
 
     # Plot posterior samples
     pairplot = analysis.pairplot(
@@ -165,4 +185,20 @@ for i in range(0,100):
                         '\n PRE(J_EI): ' + str("{:.2f}".format(pre[2].item())) + 
                         '\n PRE(J_II):  ' + str("{:.2f}".format(pre[3].item()))                   
                         ,verticalalignment='bottom', fontsize=10)
+    
+    
+    plt.show()
+    all_x_pp = np.array(all_x_pp)
+    pairplot2 = analysis.pairplot(
+        samples=all_x_pp,
+        points=x_o,
+        points_colors="red",
+        figsize=(12, 12),
+        offdiag="scatter",
+        scatter_offdiag=dict(marker=".", s=5),
+        points_offdiag=dict(marker="+", markersize=20),
+        labels = [r"$x_{{{}}}$".format(d) for d in range(22)]
+    )
+    pairplot2[0].figure.text(0.18, 0.065, 'PPC error: \n\n' + str("{:.3f}".format(PPC.item()))               
+                        ,verticalalignment='bottom', fontsize=15)
     plt.show()
