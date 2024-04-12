@@ -142,6 +142,16 @@ for i in range(0,100):
     print("\nPRE(J_IE): ", pre[1])
     print("\nPRE(J_EI): ", pre[2])
     print("\nPRE(J_II): ", pre[3])
+    
+    # Covariance between 2D marginals
+    covariance_matrix = np.cov(posterior_samples, rowvar=False)
+    
+    cov_EE_IE = covariance_matrix[0][1]
+    cov_EE_EI = covariance_matrix[0][2]
+    cov_EE_II = covariance_matrix[0][3]
+    cov_IE_EI = covariance_matrix[1][2]
+    cov_IE_II = covariance_matrix[1][3]
+    cov_EI_II = covariance_matrix[2][3]
         
     # Posterior Predictive Checks (PPC)
     PPC = 0
@@ -174,16 +184,24 @@ for i in range(0,100):
         labels = theta_data['parameters'],
         points_offdiag=dict(marker="+", markersize=20)
     )
-    pairplot[0].figure.text(0.025, 0.025, 'theta_o: \n\n J_EE: ' + str("{:.1f}".format(theta_o[0].item())) + 
+    pairplot[0].figure.text(0.03, 0.35, 'theta_o: \n\n J_EE: ' + str("{:.1f}".format(theta_o[0].item())) + 
                            '\n J_IE:  ' + str("{:.1f}".format(theta_o[1].item())) + 
                            '\n J_EI: ' + str("{:.1f}".format(theta_o[2].item())) + 
                            '\n J_II:  ' + str("{:.1f}".format(theta_o[3].item()))                   
                             ,verticalalignment='bottom', fontsize=10)
     
-    pairplot[0].figure.text(0.18, 0.025, 'PRE error: \n\n PRE(J_EE): ' + str("{:.2f}".format(pre[0].item())) + 
+    pairplot[0].figure.text(0.25, 0.025, 'PRE error: \n\n PRE(J_EE): ' + str("{:.2f}".format(pre[0].item())) + 
                         '\n PRE(J_IE):  ' + str("{:.2f}".format(pre[1].item())) + 
                         '\n PRE(J_EI): ' + str("{:.2f}".format(pre[2].item())) + 
                         '\n PRE(J_II):  ' + str("{:.2f}".format(pre[3].item()))                   
+                        ,verticalalignment='bottom', fontsize=10)
+    
+    pairplot[0].figure.text(0.025, 0.025, 'Covariance: \n\n Cov(EE,IE):  ' + str("{:.2f}".format(cov_EE_IE.item())) + 
+                        '\n Cov(EE,EI):  ' + str("{:.2f}".format(cov_EE_EI.item())) + 
+                        '\n Cov(EE,II):  ' + str("{:.2f}".format(cov_EE_II.item())) + 
+                        '\n Cov(IE,EI):  ' + str("{:.2f}".format(cov_IE_EI.item())) +
+                        '\n Cov(IE,II):  ' + str("{:.2f}".format(cov_IE_II.item())) +
+                        '\n Cov(EI,II):  ' + str("{:.2f}".format(cov_EI_II.item()))                 
                         ,verticalalignment='bottom', fontsize=10)
     
     
