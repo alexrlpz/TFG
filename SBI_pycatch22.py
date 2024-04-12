@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import pycatch22
+import multiprocessing
 
 # Torch and SBI libraries
 import torch
@@ -68,7 +69,17 @@ CDM_data_reshaped = []
 for i in range(0,CDM_data.shape[0]):                                        # de 0 a 1002
     CDM_data_reshaped.append(CDM_data[i,:])                                 # añade cada numpy array con los datos de cada simulación (15500 valores)
 
-features = np.array([pycatch22.catch22_all(CDM_data_reshaped[i])['values'] for i in range(len(CDM_data_reshaped))])  # features.shape = (1002, 22)
+
+def extract_features(data):
+    return pycatch22.catch22_all(data)['values']
+
+if __name__ == '__main__':
+    pool = multiprocessing.Pool()
+    features = np.array(pool.map(extract_features, CDM_data_reshaped))
+    pool.close()
+    pool.join()
+
+#features = np.array([pycatch22.catch22_all(CDM_data_reshaped[i])['values'] for i in range(len(CDM_data_reshaped))])  # features.shape = (1002, 22)
 
 # Z-Score normalization
 media = np.mean(features, axis=0)
@@ -205,7 +216,6 @@ for i in range(0,100):
                         ,verticalalignment='bottom', fontsize=10)
     
     
-    plt.show()
     all_x_pp = np.array(all_x_pp)
     pairplot2 = analysis.pairplot(
         samples=all_x_pp,
