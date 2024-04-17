@@ -128,6 +128,10 @@ print("\n")
 posterior = inference.build_posterior(density_estimator)
 
 # Test the trained posterior
+NUM_SAMPLES = 5000
+total_PRE = []
+total_covariances = []
+total_PPC = []
 print('\n')
 for i in range(0,100):
     # Randomly pick a sample
@@ -138,24 +142,22 @@ for i in range(0,100):
     x_o = torch.from_numpy(
                 np.array(test_features[sample],dtype=np.float32))  # Valores del CDM para esa simulación 
     # Sample the posterior    
-    posterior_samples = posterior.sample((5000,), x=x_o)
+    posterior_samples = posterior.sample((NUM_SAMPLES,), x=x_o)
     
     # Parameter recovery error (PRE)
-    pre = []
+    PRE = []
     for i in range(len(theta_o)):
         error = 0
         for j in range(len(posterior_samples)):
             error += np.abs(posterior_samples[j][i] - theta_o[i])
         
-        pre.append(error / 5000)
+        PRE.append(error / NUM_SAMPLES)
         
-    print("\nPRE(J_EE): ", pre[0])
-    print("\nPRE(J_IE): ", pre[1])
-    print("\nPRE(J_EI): ", pre[2])
-    print("\nPRE(J_II): ", pre[3])
+    total_PRE.append(PRE)
     
     # Covariance between 2D marginals
     covariance_matrix = np.cov(posterior_samples, rowvar=False)
+    covariances = []
     
     cov_EE_IE = covariance_matrix[0][1]
     cov_EE_EI = covariance_matrix[0][2]
@@ -163,7 +165,16 @@ for i in range(0,100):
     cov_IE_EI = covariance_matrix[1][2]
     cov_IE_II = covariance_matrix[1][3]
     cov_EI_II = covariance_matrix[2][3]
-        
+    
+    covariances.append(cov_EE_IE)
+    covariances.append(cov_EE_EI)
+    covariances.append(cov_EE_II)
+    covariances.append(cov_IE_EI)
+    covariances.append(cov_IE_II)
+    covariances.append(cov_EI_II)
+    
+    total_covariances.append(covariances)
+
     # Posterior Predictive Checks (PPC)
     PPC = 0
     posterior_samples = np.array(posterior_samples)
@@ -182,7 +193,8 @@ for i in range(0,100):
         PPC += total_posterior_error
         
         
-    PPC = PPC / 5000
+    PPC = PPC / NUM_SAMPLES
+    total_PPC.append(PPC)
 
     # Plot posterior samples
     pairplot = analysis.pairplot(
@@ -201,10 +213,10 @@ for i in range(0,100):
                            '\n J_II:  ' + str("{:.1f}".format(theta_o[3].item()))                   
                             ,verticalalignment='bottom', fontsize=10)
     
-    pairplot[0].figure.text(0.25, 0.025, 'PRE error: \n\n PRE(J_EE): ' + str("{:.2f}".format(pre[0].item())) + 
-                        '\n PRE(J_IE):  ' + str("{:.2f}".format(pre[1].item())) + 
-                        '\n PRE(J_EI): ' + str("{:.2f}".format(pre[2].item())) + 
-                        '\n PRE(J_II):  ' + str("{:.2f}".format(pre[3].item()))                   
+    pairplot[0].figure.text(0.25, 0.025, 'PRE error: \n\n PRE(J_EE): ' + str("{:.2f}".format(PRE[0].item())) + 
+                        '\n PRE(J_IE):  ' + str("{:.2f}".format(PRE[1].item())) + 
+                        '\n PRE(J_EI): ' + str("{:.2f}".format(PRE[2].item())) + 
+                        '\n PRE(J_II):  ' + str("{:.2f}".format(PRE[3].item()))                   
                         ,verticalalignment='bottom', fontsize=10)
     
     pairplot[0].figure.text(0.025, 0.025, 'Covariance: \n\n Cov(EE,IE):  ' + str("{:.2f}".format(cov_EE_IE.item())) + 
@@ -230,3 +242,29 @@ for i in range(0,100):
     pairplot2[0].figure.text(0.18, 0.065, 'PPC error: \n\n' + str("{:.3f}".format(PPC.item()))               
                         ,verticalalignment='bottom', fontsize=15)
     plt.show()
+    
+    
+print('\nGlobal results:\n')
+print('\nAverage Parameter Recovery Error (PRE):\n')
+
+total_PRE = np.array(total_PRE)
+parameters = ['J_EE', 'J_IE', 'J_EI', 'J_II']
+PRE_averages = [np.mean(total_PRE[:, i]) for i in range(4)]
+
+for name, average in zip(parameters, PRE_averages):
+    print(f"\nPRE({name}): {average}")
+
+print('\nAverage Covariances:\n')
+
+total_covariances = np.array(total_covariances)
+covariances_types = ['EE_IE', 'EE_EI', 'EE_II', 'IE_EI', 'IE_II', 'EI_II']
+covarianze_averages = [np.mean(total_covariances[:, i]) for i in range(6)]
+
+for name, average in zip(covariances_types, covarianze_averages):
+    print(f"\nCov({name}): {average}")
+    
+print('\nAverage Posterior Predictive Checks (PPC):\n')
+
+average_PPC = np.mean(total_PPC)
+
+print("\nPPC: ", average_PPC)
