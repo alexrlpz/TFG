@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from time import time
-import nest
 import os
+import sys
 import math
 import pickle
 import numpy as np
@@ -32,7 +32,7 @@ def pairwise_correlation(x, bin=200, hist_range=[-1.0, 1.0], num_processes=4):
     cc = [c for c in results if c is not None]
     hist, bin_edges = np.histogram(cc, bins=bin, range=hist_range)
 
-    return np.mean(cc), hist, bin_edges
+    return np.mean(cc), hist, bin_edges  
 
 def zscore(data, ch, time):
     '''
@@ -43,13 +43,20 @@ def zscore(data, ch, time):
     tr_data -= np.mean(tr_data,axis = 1).reshape(-1,1)
     return np.max(np.abs(tr_data)),tr_data[ch] /np.max(np.abs(tr_data))
 
+
+if len(sys.argv) < 2:
+    print("ERROR. Usage: python3 plots.py <simulation_folder_hash>")
+    sys.exit(1)
+    
+hash = sys.argv[1]  
+
 # Create a LIF_network object
 LIF_net = LIF_network.LIF_network()
 
 # Load data
 # path to simulation data
 data_path = '/home/alejandro/Escritorio/TFG/TFG/LIF_model/LIF_simulations/'
-folder = 'ae15b9e197447950b3671c54e580acb0'
+folder = hash
 path = data_path+folder
 
 LIF_net.LIF_params = pickle.load(open(path+'/LIF_params','rb'))
@@ -65,6 +72,23 @@ LFP_data = pickle.load(open(path+'/LFP_data','rb'))
 CDM_data = pickle.load(open(path+'/CDM_data','rb'))
 lif_mean_nu_X = pickle.load(open(path+'/lif_mean_nu_X','rb'))  # mean spike rates
 [bins, lif_nu_X] = pickle.load(open(path+'/lif_nu_X','rb'))
+
+# Path to save plots generated
+graphics_folder = (
+    f'EE_{LIF_net.LIF_params["J_YX"][0][0]:.2f}_'
+    f'IE_{LIF_net.LIF_params["J_YX"][0][1]:.2f}_'
+    f'EI_{LIF_net.LIF_params["J_YX"][1][0]:.2f}_'
+    f'II_{LIF_net.LIF_params["J_YX"][1][1]:.2f}'
+)
+# Crear la ruta completa al directorio de gráficos
+graphics_path = f'simulations_graphics/{graphics_folder}'
+
+if os.path.isdir(graphics_path):
+    print("Graphics already created")
+    sys.exit(1)
+else:    
+    os.makedirs(graphics_path, exist_ok=True)
+
 
 # Plot spikes and firing rates
 fig = plt.figure(figsize=[6,5], dpi=150)
@@ -106,6 +130,9 @@ ax2.axis('tight')
 ax2.legend(loc=1, handlelength=1)
 ax2.set_xlabel('t (ms)', labelpad=0)
 ax2.set_ylabel(r'$\nu_X$ (spikes/$\Delta t$)', labelpad=0)
+
+# Save figure
+plt.savefig(graphics_path+'/spikes_raster.png')
 
 # Plot kernels and LFP/CDM data                         # kernel -> Spike-signal impulse response function 
 # Create figure and panels
@@ -221,6 +248,9 @@ for X in LIF_net.LIF_params['X']:
         ax2[k+4].text(bins[iii],-0.5,r'$2^{%s}nAcm$' % sexp)
         k+=1
 
+# Save figures
+fig1.savefig(graphics_path+'/kernels.png')
+fig2.savefig(graphics_path+'/extra_pt_CDM.png')
 
 # Power spectrum
 fig = plt.figure(figsize=[6,5], dpi=150)
@@ -237,11 +267,14 @@ frequencies, power_spectrum = ss.welch(norm_sig, fs=16.0)
 plt.semilogy(frequencies, power_spectrum)
 plt.xlabel('frequency [Hz]')
 plt.ylabel('PSD [V**2/Hz]')
-plt.text(1.05, 0.85, 'Parámetros: \n J_EE: ' + str(LIF_net.LIF_params['J_YX'][0][0]) + 
-                           '\n J_IE:  ' + str(LIF_net.LIF_params['J_YX'][0][1]) + 
-                           '\n J_EI: ' + str(LIF_net.LIF_params['J_YX'][1][0]) + 
-                           '\n J_II:  ' + str(LIF_net.LIF_params['J_YX'][1][1])                   
+plt.text(1.05, 0.85, 'Parámetros: \n J_EE: ' + str("{:.2f}".format(LIF_net.LIF_params['J_YX'][0][0])) + 
+                           '\n J_IE:  ' + str("{:.2f}".format(LIF_net.LIF_params['J_YX'][0][1])) + 
+                           '\n J_EI: ' + str("{:.2f}".format(LIF_net.LIF_params['J_YX'][1][0])) + 
+                           '\n J_II:  ' + str("{:.2f}".format(LIF_net.LIF_params['J_YX'][1][1]))                   
                             ,transform=ax1.transAxes, verticalalignment='bottom', fontsize=8) 
+
+# Save figure
+plt.savefig(graphics_path+'/power_spectrum.png')
 
 # Firing rates correlation between pairs of neurons
 
@@ -277,6 +310,6 @@ plt.axvline(mean_corr, color='r', linestyle='dashed', linewidth=1, label=f'Media
 plt.legend()
 plt.grid(True)
 
-plt.show()
-
+# Save figure
+plt.savefig(graphics_path+'/neurons_correlation.png')
 
