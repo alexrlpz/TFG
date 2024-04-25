@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-To do.
-"""
 
-import sys
-import os
+# Script to do Simulation Based Inference
+
 import numpy as np
 import matplotlib.pyplot as plt
-import pickle
-import pycatch22
-import multiprocessing
 
 # Torch and SBI libraries
 import torch
@@ -21,8 +15,9 @@ from sbi.inference import SNPE
 from sbi.utils.get_nn_models import posterior_nn
 from sklearn.model_selection import KFold
 
-# path to simulation data
-data_path = '/home/alejandro/Escritorio/TFG/TFG/LIF_model/LIF_simulations'
+# path to simulation data features and parameter values
+save_data_path = '/home/alejandro/Escritorio/TFG/TFG/simulations_data/'
+
 
 # parameters of the LIF_network object
 theta_data = {'parameters':['J_EE',
@@ -30,56 +25,9 @@ theta_data = {'parameters':['J_EE',
                             'J_EI',
                             'J_II'],
               'data': []}
-# Current Dipole Moment (CDM) data
-CDM_data = []
 
-# Load simulation data
-ldir = os.listdir(data_path)
-for i,folder in enumerate(ldir):
-    print(f'Loading file {i} out of {len(ldir)}')
-    # load CDMs
-    try:
-        cdm = pickle.load(open(os.path.join(data_path,folder,"CDM_data"),'rb'))
-        current_data = cdm[f'{"E"}{"E"}']+cdm[f'{"E"}{"I"}']+cdm[f'{"I"}{"E"}']+cdm[f'{"I"}{"I"}']
-        CDM_data.append(current_data)
-    except (FileNotFoundError, IOError):
-        print(f'File CDM_data not found in {folder}')
-
-    # load synapse parameters of recurrent connections and external input
-    try:
-        LIF_params = pickle.load(open(os.path.join(data_path,folder,"LIF_params"),'rb'))
-        theta_data['data'].append([LIF_params['J_YX'][0][0],
-                                   LIF_params['J_YX'][0][1],
-                                   LIF_params['J_YX'][1][0],
-                                   LIF_params['J_YX'][1][1]
-                                  ])
-    except (FileNotFoundError, IOError):
-        print(f'File LIF_params not found in {folder}')
-
-# transform to np arrays
-theta_data['data'] = np.array(theta_data['data'])
-CDM_data = np.array(CDM_data)
-
-# remove the first 500 samples (transient response from convolution)
-CDM_data = CDM_data[:,500:]                                                 # se queda un numpy array de shape (1002, 15500)
-
-# Features
-CDM_data_reshaped = []
-
-for i in range(0,CDM_data.shape[0]):                                        # de 0 a 1002
-    CDM_data_reshaped.append(CDM_data[i,:])                                 # añade cada numpy array con los datos de cada simulación (15500 valores)
-
-
-def extract_features(data):
-    return pycatch22.catch22_all(data)['values']
-
-if __name__ == '__main__':
-    pool = multiprocessing.Pool()
-    features = np.array(pool.map(extract_features, CDM_data_reshaped))
-    pool.close()
-    pool.join()
-
-#features = np.array([pycatch22.catch22_all(CDM_data_reshaped[i])['values'] for i in range(len(CDM_data_reshaped))])  # features.shape = (1002, 22)
+features = np.load(save_data_path + 'features.npy')
+theta_data['data'] = np.load(save_data_path + 'theta_data.npy')
 
 # Z-Score normalization
 media = np.mean(features, axis=0)
@@ -106,12 +54,10 @@ kfold = KFold(n_splits=10, shuffle=True)
 for kf, (train_index, test_index) in enumerate(kfold.split(features_norm)):
         # TRAINING DATA
         train_theta = theta_data['data'][train_index,:]
-        #train_CDM = CDM_data[train_index,:]
         train_features = features_norm[train_index,:]
         
         # TEST DATA
         test_theta = theta_data['data'][test_index,:]
-        #test_CDM = CDM_data[test_index,:]
         test_features = features_norm[test_index,:]
 
 
