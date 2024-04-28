@@ -34,6 +34,12 @@ media = np.mean(features, axis=0)
 std_dev = np.std(features, axis=0)
 features_norm = (features - media) / std_dev
 
+# Min-Max normalization
+# min_vals = np.min(features, axis=0)
+# max_vals = np.max(features, axis=0)
+
+# features_norm = (features - min_vals) / (max_vals - min_vals)
+
 # pre-configured embedding network
 embedding_net = FCEmbedding(
     input_dim=features_norm.shape[1],
