@@ -84,7 +84,8 @@ graphics_folder = (
 graphics_path = f'simulations_graphics/{graphics_folder}'
 
 if os.path.isdir(graphics_path):
-    print("Graphics already created")
+    print("\nGraphics already created\n")
+    print(graphics_folder)
     sys.exit(1)
 else:    
     os.makedirs(graphics_path, exist_ok=True)

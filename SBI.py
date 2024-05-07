@@ -14,6 +14,7 @@ from sbi.neural_nets.embedding_nets import FCEmbedding
 from sbi.inference import SNPE
 from sbi.utils.get_nn_models import posterior_nn
 from sklearn.model_selection import KFold
+from sklearn.preprocessing import StandardScaler
 
 # path to simulation data features and parameter values
 save_data_path = '/home/alejandro/Escritorio/TFG/TFG/simulations_data/'
@@ -30,9 +31,12 @@ features = np.load(save_data_path + 'features.npy')
 theta_data['data'] = np.load(save_data_path + 'theta_data.npy')
 
 # Z-Score normalization
-media = np.mean(features, axis=0)
-std_dev = np.std(features, axis=0)
-features_norm = (features - media) / std_dev
+# media = np.mean(features, axis=0)
+# std_dev = np.std(features, axis=0)
+# features_norm = (features - media) / std_dev
+
+scaler = StandardScaler()
+features_norm = scaler.fit_transform(features)
 
 # Min-Max normalization
 # min_vals = np.min(features, axis=0)
@@ -43,15 +47,14 @@ features_norm = (features - media) / std_dev
 # pre-configured embedding network
 embedding_net = FCEmbedding(
     input_dim=features_norm.shape[1],
-    num_hiddens=100,
+    num_hiddens=200,
     num_layers=2,
     output_dim=20,
 )
 
 # instantiate the SBI object
 density_estimator_build_fun = posterior_nn(
-    model="maf", hidden_features=100, num_transforms=2,
-    embedding_net = embedding_net
+    model="maf", z_score_x='structured', hidden_features=200, num_transforms=2
 )
 inference = SNPE(density_estimator=density_estimator_build_fun)
 

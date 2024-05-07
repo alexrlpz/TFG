@@ -58,17 +58,18 @@ for J_EE in np.linspace(0.5,4.,10):
                         enable = True
                     else:
                         enable = False
-                        print("Parameters aren't on the space search")
+                        print("\nParameters aren't on the space search")
                     if enable:
                         # Create hash
                         js_0 = json.dumps([J_EE,J_IE,J_EI,J_II],
                                         sort_keys=True).encode()
                         folder = hashlib.md5(js_0).hexdigest()
-                        print("\nFolder: " + folder)
                         # Create folder
                         if os.path.isdir('LIF_simulations/'+folder):
                             enable = False
-                            print("Parameters already used")
+                            print("\nParameters already used")
+                            
+                        print("\nFolder: " + folder)
                             
                             
                     if enable:
