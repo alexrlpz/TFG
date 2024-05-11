@@ -10,6 +10,7 @@ from sbi.inference import SNPE
 from sbi.utils.get_nn_models import posterior_nn
 from sklearn.model_selection import KFold
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 
 # LOAD SIMULATIONS TO TRAIN SBI
@@ -73,7 +74,7 @@ for i in range(0,len(mouses_features)):                                         
     age_average_parameters = np.zeros((len(mouses_features[i]), 4))
     
     for j in range(0,len(mouses_features[i])):                                   # for each sample of that age
-        posterior_samples = np.array(posterior.sample((5000,), x=mouses_features[i][j]))
+        posterior_samples = np.array(posterior.sample((4200,), x=mouses_features[i][j]))
         average_EE = np.mean(posterior_samples[:, 0])
         average_IE = np.mean(posterior_samples[:, 1])
         average_EI = np.mean(posterior_samples[:, 2])
@@ -95,4 +96,25 @@ for i in range(0,len(mouses_features)):
     print("\n Average J_IE: " + str(final_results[i][1]))
     print("\n Average J_EI: " + str(final_results[i][2]))
     print("\n Average J_II: " + str(final_results[i][3]))
+
+excitation = []
+inhibition = []
+for i in range(0,len(mouses_features)):  
+    print("\n")
+    print("\nE/I_exc = " + str(np.abs(final_results[i][0]/final_results[i][2])))
+    excitation.append(np.abs(final_results[i][0]/final_results[i][2]))
+    print("\nE/I_inh = " + str(np.abs(final_results[i][1]/final_results[i][3])))
+    inhibition.append(np.abs(final_results[i][1]/final_results[i][3]))
     
+
+fig = plt.figure(figsize=[6,5], dpi=150)
+ax1 = fig.add_axes([0.15,0.15,0.65,0.65])
+plt.ylim(0, 0.15)
+plt.plot(mouses_data['ages'], excitation, label='E/I_exc')
+plt.plot(mouses_data['ages'], inhibition, label='E/I_inh')
+plt.title('Excitation and inhibition across ages')
+plt.xlabel('Age')
+plt.ylabel('Value')
+plt.legend()
+#plt.text(0, 1.1,'Num transforms: ' + str(2),transform=ax1.transAxes, verticalalignment='bottom', fontsize=8) 
+plt.show()
