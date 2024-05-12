@@ -162,19 +162,19 @@ for i in range(0,100):
         labels = theta_data['parameters'],
         points_offdiag=dict(marker="+", markersize=20)
     )
-    pairplot[0].figure.text(0.03, 0.35, 'theta_o: \n\n J_EE: ' + str("{:.1f}".format(theta_o[0].item())) + 
+    pairplot[0].figure.text(0.03, 0.35, 'Theta_o: \n\n J_EE: ' + str("{:.1f}".format(theta_o[0].item())) + 
                            '\n J_IE:  ' + str("{:.1f}".format(theta_o[1].item())) + 
                            '\n J_EI: ' + str("{:.1f}".format(theta_o[2].item())) + 
                            '\n J_II:  ' + str("{:.1f}".format(theta_o[3].item()))                   
                             ,verticalalignment='bottom', fontsize=10)
     
-    pairplot[0].figure.text(0.25, 0.025, 'PRE error: \n\n PRE(J_EE): ' + str("{:.2f}".format(PRE[0].item())) + 
+    pairplot[0].figure.text(0.2, 0.025, 'PRE error: \n\n PRE(J_EE): ' + str("{:.2f}".format(PRE[0].item())) + 
                         '\n PRE(J_IE):  ' + str("{:.2f}".format(PRE[1].item())) + 
                         '\n PRE(J_EI): ' + str("{:.2f}".format(PRE[2].item())) + 
                         '\n PRE(J_II):  ' + str("{:.2f}".format(PRE[3].item()))                   
                         ,verticalalignment='bottom', fontsize=10)
     
-    pairplot[0].figure.text(0.025, 0.025, 'Covariance: \n\n Cov(EE,IE):  ' + str("{:.2f}".format(cov_EE_IE.item())) + 
+    pairplot[0].figure.text(0.025, 0.025, 'Covariances: \n\n Cov(EE,IE):  ' + str("{:.2f}".format(cov_EE_IE.item())) + 
                         '\n Cov(EE,EI):  ' + str("{:.2f}".format(cov_EE_EI.item())) + 
                         '\n Cov(EE,II):  ' + str("{:.2f}".format(cov_EE_II.item())) + 
                         '\n Cov(IE,EI):  ' + str("{:.2f}".format(cov_IE_EI.item())) +
@@ -182,6 +182,8 @@ for i in range(0,100):
                         '\n Cov(EI,II):  ' + str("{:.2f}".format(cov_EI_II.item()))                 
                         ,verticalalignment='bottom', fontsize=10)
     
+    pairplot[0].figure.text(0.37, 0.025, 'PPC error: \n\n' + str("{:.3f}".format(PPC.item()))           
+                        ,verticalalignment='bottom', fontsize=10)
     
     all_x_pp = np.array(all_x_pp)
     pairplot2 = analysis.pairplot(
