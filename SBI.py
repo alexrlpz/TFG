@@ -183,8 +183,6 @@ for kf, (train_index, test_index) in enumerate(kfold.split(features_norm)):
                             '\n Cov(EI,II):  ' + str("{:.2f}".format(cov_EI_II.item()))                 
                             ,verticalalignment='bottom', fontsize=10)
         
-        pairplot[0].figure.text(0.37, 0.025, 'PPC error: \n\n' + str("{:.3f}".format(PPC.item()))           
-                            ,verticalalignment='bottom', fontsize=10)
         
         all_x_pp = np.array(all_x_pp)
         pairplot2 = analysis.pairplot(
