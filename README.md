@@ -12,6 +12,12 @@ Two main approaches are evaluated and compared using the Sequence Neural Posteri
 
 Both results are robustly cross-validated (10-fold CV) and assessed using metrics like Parameter Recovery Error (PRE), covariance between 2D marginals, and Posterior Predictive Checks (PPC).
 
+## Visualizations
+
+| Simulation Data | Neural Spikes |
+|:-:|:-:|
+| ![Simulation data overview](public/data.jpg) | ![Neural spike raster](public/spikes.jpg) |
+
 ## Repository Structure
 
 - `LIF_model/`: Contains codes and simulation data of the biophysical Leaky Integrate-and-Fire network.
